@@ -43,7 +43,7 @@ pub static TRAVERSE_FORKS: Lazy<ChainHardforks> = Lazy::new(|| {
 /// Traverse dev testnet specification.
 pub static TRAVERSE_DEV: Lazy<Arc<OpChainSpec>> = Lazy::new(|| {
     OpChainSpec::new(ChainSpec {
-        chain: Chain::from_named(NamedChain::Alphanet),
+        chain: Chain::from_named(NamedChain::Traverse),
         genesis: serde_json::from_str(include_str!("../../../etc/dev-genesis.json"))
             .expect("Can't deserialize traverse genesis json"),
         paris_block_and_final_difficulty: Some((0, U256::from(0))),
@@ -58,7 +58,7 @@ pub static TRAVERSE_DEV: Lazy<Arc<OpChainSpec>> = Lazy::new(|| {
 /// Traverse main chain specification.
 pub static TRAVERSE_MAINNET: Lazy<Arc<OpChainSpec>> = Lazy::new(|| {
     OpChainSpec::new(ChainSpec {
-        chain: Chain::from_named(NamedChain::Alphanet),
+        chain: Chain::from_named(NamedChain::Traverse),
         // genesis contains empty alloc field because state at first bedrock block is imported
         // manually from trusted source
         genesis: serde_json::from_str(include_str!("../../../etc/traverse-genesis.json"))
