@@ -1,5 +1,5 @@
 [package]
-name = "alphanet-testing"
+name = "traverse-testing"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -10,7 +10,7 @@ keywords.workspace = true
 categories.workspace = true
 
 [dev-dependencies]
-alphanet-node.workspace = true
+traverse-node.workspace = true
 
 alloy.workspace = true
 alloy-network.workspace = true

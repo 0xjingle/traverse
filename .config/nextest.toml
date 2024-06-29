@@ -2,5 +2,5 @@
 serial-integration = { max-threads = 1 }
 
 [[profile.default.overrides]]
-filter = 'package(alphanet-testing)'
+filter = 'package(traverse-testing)'
 test-group = 'serial-integration'

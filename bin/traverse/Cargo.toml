@@ -1,12 +1,12 @@
 [package]
-name = "alphanet"
+name = "traverse"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Reth AlphaNet is a testnet OP Stack rollup aimed at enabling experimentation of bleeding edge Ethereum Research."
-default-run = "alphanet"
+description = "Traverse is a testnet OP Stack rollup aimed at enabling experimentation of bleeding edge Ethereum Research."
+default-run = "traverse"
 
 [lints]
 workspace = true
@@ -15,8 +15,8 @@ workspace = true
 alloy-signer-local.workspace = true
 alloy-network.workspace = true
 alloy-primitives.workspace = true
-alphanet-node.workspace = true
-alphanet-wallet.workspace = true
+traverse-node.workspace = true
+traverse-wallet.workspace = true
 eyre.workspace = true
 tracing.workspace = true
 reth-cli-util.workspace = true
@@ -42,5 +42,5 @@ min-debug-logs = ["tracing/release_max_level_debug"]
 min-trace-logs = ["tracing/release_max_level_trace"]
 
 [[bin]]
-name = "alphanet"
+name = "traverse"
 path = "src/main.rs"

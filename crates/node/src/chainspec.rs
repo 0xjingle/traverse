@@ -1,4 +1,4 @@
-//! Alphanet chainspec parsing logic.
+//! Traverse chainspec parsing logic.
 
 use alloy_primitives::{b256, U256};
 use once_cell::sync::Lazy;
@@ -12,8 +12,8 @@ use reth_optimism_forks::OptimismHardfork;
 use reth_primitives::constants::ETHEREUM_BLOCK_GAS_LIMIT;
 use std::sync::Arc;
 
-/// Alphanet forks.
-pub static ALPHANET_FORKS: Lazy<ChainHardforks> = Lazy::new(|| {
+/// Traverse forks.
+pub static TRAVERSE_FORKS: Lazy<ChainHardforks> = Lazy::new(|| {
     ChainHardforks::new(vec![
         (EthereumHardfork::Frontier.boxed(), ForkCondition::Block(0)),
         (EthereumHardfork::Homestead.boxed(), ForkCondition::Block(0)),
@@ -40,14 +40,14 @@ pub static ALPHANET_FORKS: Lazy<ChainHardforks> = Lazy::new(|| {
     ])
 });
 
-/// Alphanet dev testnet specification.
-pub static ALPHANET_DEV: Lazy<Arc<OpChainSpec>> = Lazy::new(|| {
+/// Traverse dev testnet specification.
+pub static TRAVERSE_DEV: Lazy<Arc<OpChainSpec>> = Lazy::new(|| {
     OpChainSpec::new(ChainSpec {
         chain: Chain::from_named(NamedChain::Alphanet),
         genesis: serde_json::from_str(include_str!("../../../etc/dev-genesis.json"))
-            .expect("Can't deserialize alphanet genesis json"),
+            .expect("Can't deserialize traverse genesis json"),
         paris_block_and_final_difficulty: Some((0, U256::from(0))),
-        hardforks: ALPHANET_FORKS.clone(),
+        hardforks: TRAVERSE_FORKS.clone(),
         base_fee_params: BaseFeeParamsKind::Constant(BaseFeeParams::ethereum()),
         deposit_contract: None,
         ..Default::default()
@@ -55,19 +55,19 @@ pub static ALPHANET_DEV: Lazy<Arc<OpChainSpec>> = Lazy::new(|| {
     .into()
 });
 
-/// Alphanet main chain specification.
-pub static ALPHANET_MAINNET: Lazy<Arc<OpChainSpec>> = Lazy::new(|| {
+/// Traverse main chain specification.
+pub static TRAVERSE_MAINNET: Lazy<Arc<OpChainSpec>> = Lazy::new(|| {
     OpChainSpec::new(ChainSpec {
         chain: Chain::from_named(NamedChain::Alphanet),
         // genesis contains empty alloc field because state at first bedrock block is imported
         // manually from trusted source
-        genesis: serde_json::from_str(include_str!("../../../etc/alphanet-genesis.json"))
-            .expect("Can't deserialize alphanet genesis json"),
+        genesis: serde_json::from_str(include_str!("../../../etc/traverse-genesis.json"))
+            .expect("Can't deserialize traverse genesis json"),
         genesis_hash: once_cell_set(b256!(
             "2f980576711e3617a5e4d83dd539548ec0f7792007d505a3d2e9674833af2d7c"
         )),
         paris_block_and_final_difficulty: Some((0, U256::from(0))),
-        hardforks: ALPHANET_FORKS.clone(),
+        hardforks: TRAVERSE_FORKS.clone(),
         base_fee_params: BaseFeeParamsKind::Variable(
             vec![
                 (EthereumHardfork::London.boxed(), BaseFeeParams::optimism()),
@@ -82,19 +82,19 @@ pub static ALPHANET_MAINNET: Lazy<Arc<OpChainSpec>> = Lazy::new(|| {
     .into()
 });
 
-/// Alphanet chain specification parser.
+/// Traverse chain specification parser.
 #[derive(Debug, Clone, Default)]
-pub struct AlphanetChainSpecParser;
+pub struct TraverseChainSpecParser;
 
-impl ChainSpecParser for AlphanetChainSpecParser {
+impl ChainSpecParser for TraverseChainSpecParser {
     type ChainSpec = OpChainSpec;
 
-    const SUPPORTED_CHAINS: &'static [&'static str] = &["alphanet", "dev"];
+    const SUPPORTED_CHAINS: &'static [&'static str] = &["traverse", "dev"];
 
     fn parse(s: &str) -> eyre::Result<Arc<Self::ChainSpec>> {
         Ok(match s {
-            "alphanet" => ALPHANET_MAINNET.clone(),
-            "dev" => ALPHANET_DEV.clone(),
+            "traverse" => TRAVERSE_MAINNET.clone(),
+            "dev" => TRAVERSE_DEV.clone(),
             s => {
                 let mut chainspec = OpChainSpec::from(parse_genesis(s)?);
 
@@ -125,7 +125,7 @@ impl ChainSpecParser for AlphanetChainSpecParser {
 mod tests {
     use std::path::PathBuf;
 
-    use super::AlphanetChainSpecParser;
+    use super::TraverseChainSpecParser;
     use reth_chainspec::EthereumHardforks;
     use reth_cli::chainspec::ChainSpecParser;
     use reth_optimism_forks::OptimismHardforks;
@@ -133,9 +133,9 @@ mod tests {
     #[test]
     fn chainspec_parser_adds_prague() {
         let mut chainspec_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        chainspec_path.push("../../etc/alphanet-genesis.json");
+        chainspec_path.push("../../etc/traverse-genesis.json");
 
-        let chain_spec = AlphanetChainSpecParser::parse(&chainspec_path.to_string_lossy())
+        let chain_spec = TraverseChainSpecParser::parse(&chainspec_path.to_string_lossy())
             .expect("could not parse chainspec");
 
         assert!(chain_spec.is_bedrock_active_at_block(0));
