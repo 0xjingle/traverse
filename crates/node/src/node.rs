@@ -45,7 +45,7 @@ impl TraverseNode {
 
     /// Returns the components for the given [RollupArgs].
     pub fn components<Node>(
-        args: RollupArgs,
+        args: &RollupArgs,
     ) -> ComponentsBuilder<
         Node,
         OptimismPoolBuilder,
@@ -60,7 +60,6 @@ impl TraverseNode {
             Types: NodeTypesWithEngine<Engine = OptimismEngineTypes, ChainSpec = OpChainSpec>,
         >,
     {
-        let RollupArgs { disable_txpool_gossip, compute_pending_block, discovery_v4, .. } = args;
         ComponentsBuilder::default()
             .node_types::<Node>()
             .pool(OptimismPoolBuilder {
@@ -72,10 +71,10 @@ impl TraverseNode {
                     ..Default::default()
                 },
             })
-            .payload(TraversePayloadBuilder::new(compute_pending_block))
+            .payload(TraversePayloadBuilder::new(args.compute_pending_block))
             .network(TraverseNetworkBuilder::new(OptimismNetworkBuilder {
-                disable_txpool_gossip,
-                disable_discovery_v4: !discovery_v4,
+                disable_txpool_gossip: args.disable_txpool_gossip,
+                disable_discovery_v4: !args.discovery_v4,
             }))
             .executor(TraverseExecutorBuilder::default())
             .consensus(OptimismConsensusBuilder::default())
@@ -113,7 +112,7 @@ where
 
     fn components_builder(&self) -> Self::ComponentsBuilder {
         let Self { args } = self;
-        Self::components(args.clone())
+        Self::components(args)
     }
 
     fn add_ons(&self) -> Self::AddOns {
