@@ -1,7 +1,7 @@
 //! Traverse chainspec parsing logic.
+use std::sync::LazyLock;
 
 use alloy_primitives::{b256, U256};
-use once_cell::sync::Lazy;
 use reth_chainspec::{
     once_cell_set, BaseFeeParams, BaseFeeParamsKind, Chain, ChainHardforks, ChainSpec,
     EthereumHardfork, ForkCondition, NamedChain,
@@ -13,7 +13,7 @@ use reth_primitives::constants::ETHEREUM_BLOCK_GAS_LIMIT;
 use std::sync::Arc;
 
 /// Traverse forks.
-pub static TRAVERSE_FORKS: Lazy<ChainHardforks> = Lazy::new(|| {
+pub static TRAVERSE_FORKS: LazyLock<ChainHardforks> = LazyLock::new(|| {
     ChainHardforks::new(vec![
         (EthereumHardfork::Frontier.boxed(), ForkCondition::Block(0)),
         (EthereumHardfork::Homestead.boxed(), ForkCondition::Block(0)),
@@ -41,7 +41,7 @@ pub static TRAVERSE_FORKS: Lazy<ChainHardforks> = Lazy::new(|| {
 });
 
 /// Traverse dev testnet specification.
-pub static TRAVERSE_DEV: Lazy<Arc<OpChainSpec>> = Lazy::new(|| {
+pub static TRAVERSE_DEV: LazyLock<Arc<OpChainSpec>> = LazyLock::new(|| {
     OpChainSpec::new(ChainSpec {
         chain: Chain::from_named(NamedChain::Traverse),
         genesis: serde_json::from_str(include_str!("../../../etc/dev-genesis.json"))
@@ -56,7 +56,7 @@ pub static TRAVERSE_DEV: Lazy<Arc<OpChainSpec>> = Lazy::new(|| {
 });
 
 /// Traverse main chain specification.
-pub static TRAVERSE_MAINNET: Lazy<Arc<OpChainSpec>> = Lazy::new(|| {
+pub static TRAVERSE_MAINNET: LazyLock<Arc<OpChainSpec>> = LazyLock::new(|| {
     OpChainSpec::new(ChainSpec {
         chain: Chain::from_named(NamedChain::Traverse),
         // genesis contains empty alloc field because state at first bedrock block is imported
