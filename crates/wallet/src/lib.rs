@@ -162,6 +162,7 @@ impl From<TraverseWalletError> for jsonrpsee::types::error::ErrorObject<'static>
 }
 
 /// Implementation of the Traverse `wallet_` namespace.
+#[derive(Debug)]
 pub struct TraverseWallet<Provider, Eth> {
     inner: Arc<TraverseWalletInner<Provider, Eth>>,
 }
@@ -310,6 +311,7 @@ where
 }
 
 /// Implementation of the Traverse `wallet_` namespace.
+#[derive(Debug)]
 struct TraverseWalletInner<Provider, Eth> {
     provider: Provider,
     eth_api: Eth,
