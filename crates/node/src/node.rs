@@ -21,14 +21,12 @@ use reth_node_builder::{
 use reth_optimism_chainspec::OpChainSpec;
 use reth_optimism_node::{
     args::RollupArgs,
-    node::{
-        OptimismAddOns, OptimismConsensusBuilder, OptimismNetworkBuilder, OptimismPayloadBuilder,
-        OptimismPoolBuilder,
-    },
-    OpExecutionStrategyFactory, OptimismEngineTypes,
+    node::{OpAddOns, OpConsensusBuilder, OpNetworkBuilder, OpPayloadBuilder, OpPoolBuilder},
+    OpEngineTypes, OpExecutionStrategyFactory,
 };
 use reth_payload_builder::PayloadBuilderHandle;
 use reth_transaction_pool::{SubPoolLimit, TransactionPool, TXPOOL_MAX_ACCOUNT_SLOTS_PER_SENDER};
+use reth_trie_db::MerklePatriciaTrie;
 use std::time::Duration;
 use tracing::info;
 
@@ -50,20 +48,20 @@ impl TraverseNode {
         args: &RollupArgs,
     ) -> ComponentsBuilder<
         Node,
-        OptimismPoolBuilder,
+        OpPoolBuilder,
         TraversePayloadBuilder,
         TraverseNetworkBuilder,
         TraverseExecutorBuilder,
-        OptimismConsensusBuilder,
+        OpConsensusBuilder,
     >
     where
         Node: FullNodeTypes<
-            Types: NodeTypesWithEngine<Engine = OptimismEngineTypes, ChainSpec = OpChainSpec>,
+            Types: NodeTypesWithEngine<Engine = OpEngineTypes, ChainSpec = OpChainSpec>,
         >,
     {
         ComponentsBuilder::default()
             .node_types::<Node>()
-            .pool(OptimismPoolBuilder {
+            .pool(OpPoolBuilder {
                 pool_config_overrides: PoolBuilderConfigOverrides {
                     queued_limit: Some(SubPoolLimit::default() * 2),
                     pending_limit: Some(SubPoolLimit::default() * 2),
@@ -73,12 +71,12 @@ impl TraverseNode {
                 },
             })
             .payload(TraversePayloadBuilder::new(args.compute_pending_block))
-            .network(TraverseNetworkBuilder::new(OptimismNetworkBuilder {
+            .network(TraverseNetworkBuilder::new(OpNetworkBuilder {
                 disable_txpool_gossip: args.disable_txpool_gossip,
                 disable_discovery_v4: !args.discovery_v4,
             }))
             .executor(TraverseExecutorBuilder::default())
-            .consensus(OptimismConsensusBuilder::default())
+            .consensus(OpConsensusBuilder::default())
     }
 }
 
@@ -86,30 +84,28 @@ impl TraverseNode {
 impl NodeTypes for TraverseNode {
     type Primitives = ();
     type ChainSpec = OpChainSpec;
+    type StateCommitment = MerklePatriciaTrie;
 }
 
 impl NodeTypesWithEngine for TraverseNode {
-    type Engine = OptimismEngineTypes;
+    type Engine = OpEngineTypes;
 }
 
 impl<N> Node<N> for TraverseNode
 where
-    N: FullNodeTypes<
-        Types: NodeTypesWithEngine<Engine = OptimismEngineTypes, ChainSpec = OpChainSpec>,
-    >,
+    N: FullNodeTypes<Types: NodeTypesWithEngine<Engine = OpEngineTypes, ChainSpec = OpChainSpec>>,
 {
     type ComponentsBuilder = ComponentsBuilder<
         N,
-        OptimismPoolBuilder,
+        OpPoolBuilder,
         TraversePayloadBuilder,
         TraverseNetworkBuilder,
         TraverseExecutorBuilder,
-        OptimismConsensusBuilder,
+        OpConsensusBuilder,
     >;
 
-    type AddOns = OptimismAddOns<
-        NodeAdapter<N, <Self::ComponentsBuilder as NodeComponentsBuilder<N>>::Components>,
-    >;
+    type AddOns =
+        OpAddOns<NodeAdapter<N, <Self::ComponentsBuilder as NodeComponentsBuilder<N>>::Components>>;
 
     fn components_builder(&self) -> Self::ComponentsBuilder {
         let Self { args } = self;
@@ -117,7 +113,7 @@ where
     }
 
     fn add_ons(&self) -> Self::AddOns {
-        OptimismAddOns::new(self.args.sequencer_http.clone())
+        OpAddOns::new(self.args.sequencer_http.clone())
     }
 }
 
@@ -154,28 +150,27 @@ where
 #[derive(Debug, Default, Clone)]
 pub struct TraversePayloadBuilder {
     /// Inner Optimism payload builder service.
-    inner: OptimismPayloadBuilder,
+    inner: OpPayloadBuilder,
 }
 
 impl TraversePayloadBuilder {
     /// Create a new instance with the given `compute_pending_block` flag.
     pub const fn new(compute_pending_block: bool) -> Self {
-        Self { inner: OptimismPayloadBuilder::new(compute_pending_block) }
+        Self { inner: OpPayloadBuilder::new(compute_pending_block) }
     }
 }
 
 impl<Node, Pool> PayloadServiceBuilder<Node, Pool> for TraversePayloadBuilder
 where
-    Node: FullNodeTypes<
-        Types: NodeTypesWithEngine<Engine = OptimismEngineTypes, ChainSpec = OpChainSpec>,
-    >,
+    Node:
+        FullNodeTypes<Types: NodeTypesWithEngine<Engine = OpEngineTypes, ChainSpec = OpChainSpec>>,
     Pool: TransactionPool + Unpin + 'static,
 {
     async fn spawn_payload_service(
         self,
         ctx: &BuilderContext<Node>,
         pool: Pool,
-    ) -> eyre::Result<PayloadBuilderHandle<OptimismEngineTypes>> {
+    ) -> eyre::Result<PayloadBuilderHandle<OpEngineTypes>> {
         self.inner.spawn(TraverseEvmConfig::new(ctx.chain_spec()), ctx, pool)
     }
 }
@@ -183,12 +178,12 @@ where
 /// The default traverse network builder.
 #[derive(Debug, Default, Clone)]
 pub struct TraverseNetworkBuilder {
-    inner: OptimismNetworkBuilder,
+    inner: OpNetworkBuilder,
 }
 
 impl TraverseNetworkBuilder {
     /// Create a new instance based on the given op builder
-    pub const fn new(network: OptimismNetworkBuilder) -> Self {
+    pub const fn new(network: OpNetworkBuilder) -> Self {
         Self { inner: network }
     }
 }
