@@ -54,7 +54,7 @@ fn main() {
             let node = builder
                 .with_types_and_provider::<TraverseNode, BlockchainProvider2<_>>()
                 .with_components(TraverseNode::components(&rollup_args))
-                .with_add_ons(OpAddOns::new(rollup_args.sequencer_http.clone()))
+                .with_add_ons(OpAddOns::new(rollup_args.sequencer_http))
                 .extend_rpc_modules(move |ctx| {
                     // register traverse wallet namespace
                     if let Ok(sk) = std::env::var("EXP1_SK") {
