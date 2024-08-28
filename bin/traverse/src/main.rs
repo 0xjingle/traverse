@@ -33,7 +33,7 @@ use traverse_node::{
     node::TraverseNode,
     rpc::{EthApiExt, EthApiOverrideServer},
 };
-use traverse_wallet::{TraverseWallet, TraverseWalletApiServer};
+use traverse_wallet::{TraverseWallet, TraverseWalletApiServer, RethUpstream};
 use traverse_walltime::{TraverseWallTime, TraverseWallTimeRpcApiServer};
 use reth_node_builder::{engine_tree_config::TreeConfig, EngineNodeLauncher, NodeComponents};
 use reth_optimism_cli::Cli;
@@ -92,9 +92,11 @@ fn main() {
                     if let Some(wallet) = wallet {
                         ctx.modules.merge_configured(
                             TraverseWallet::new(
-                                ctx.provider().clone(),
-                                wallet,
-                                ctx.registry.eth_api().clone(),
+                                RethUpstream::new(
+                                    ctx.provider().clone(),
+                                    ctx.registry.eth_api().clone(),
+                                    wallet,
+                                ),
                                 ctx.config().chain.chain().id(),
                             )
                             .into_rpc(),
